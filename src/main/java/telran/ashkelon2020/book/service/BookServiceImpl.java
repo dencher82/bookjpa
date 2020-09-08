@@ -108,8 +108,7 @@ public class BookServiceImpl implements BookService {
 	@Transactional
 	public AuthorDto removeAuthor(String authorName) {
 		Author author = authorRepository.findById(authorName).orElseThrow(() -> new EntityNotFoundException());
-		bookRepository.findBooksByAuthorsName(authorName)
-				.forEach(b -> bookRepository.delete(b));
+		bookRepository.deleteBooksByAuthorsName(authorName);
 		authorRepository.delete(author);
 		return modelMapper.map(author, AuthorDto.class);
 	}

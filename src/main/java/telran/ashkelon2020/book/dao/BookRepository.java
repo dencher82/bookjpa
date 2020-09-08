@@ -16,4 +16,6 @@ public interface BookRepository extends JpaRepository<Book, String> {
 	@Query("select b.publisher.publisherName from Book b, in (b.authors)authors where authors.name=?1")
 	Stream<String> findPublishersByAuthor(String name);
 	
+	void deleteBooksByAuthorsName(String name);
+	
 }
