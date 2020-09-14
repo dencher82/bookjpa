@@ -38,29 +38,29 @@ public class BookController {
 		return bookService.updateBook(isbn, title);
 	}
 	
-	@GetMapping("/books/author/{authorName}")
-	public Iterable<BookDto> findBooksByAuthor(@PathVariable String authorName) {
-		return bookService.findBooksByAuthor(authorName);
+	@GetMapping("/books/author/{author}")
+	public Iterable<BookDto> findBooksByAuthor(@PathVariable String author) {
+		return bookService.findBooksByAuthor(author);
 	}
 	
-	@GetMapping("/books/publisher/{publisherName}")
-	public Iterable<BookDto> findBooksByPublisher(@PathVariable String publisherName) {
-		return bookService.findBooksByPublisher(publisherName);
+	@GetMapping("/books/publisher/{publisher}")
+	public Iterable<BookDto> findBooksByPublisher(@PathVariable String publisher) {
+		return bookService.findBooksByPublisher(publisher);
 	}
 	
-	@GetMapping("/authors/{isbn}")
+	@GetMapping("/authors/book/{isbn}")
 	public Iterable<AuthorDto> findBookAuthors(@PathVariable String isbn) {
 		return bookService.findBookAuthors(isbn);
 	}
 	
-	@GetMapping("/publishers/author/{authorName}")
-	public Iterable<String> findPublishersByAuthor(@PathVariable String authorName) {
-		return bookService.findPublishersByAuthor(authorName);
+	@GetMapping("/publishers/author/{author}")
+	public Iterable<String> findPublishersByAuthor(@PathVariable String author) {
+		return bookService.findPublishersByAuthor(author);
 	}
 	
-	@DeleteMapping("/author/{authorName}")
-	public AuthorDto removeAuthor(@PathVariable String authorName) {
-		return bookService.removeAuthor(authorName);
+	@DeleteMapping("/author/{author}")
+	public AuthorDto removeAuthor(@PathVariable String author) {
+		return bookService.removeAuthor(author);
 	}
 	
 }

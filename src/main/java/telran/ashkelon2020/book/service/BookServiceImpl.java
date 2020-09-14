@@ -21,26 +21,32 @@ import telran.ashkelon2020.book.model.Publisher;
 @Service
 public class BookServiceImpl implements BookService {
 	
-	@Autowired BookRepository bookRepository;
+	@Autowired 
+	BookRepository bookRepository;
 	
-	@Autowired AuthorRepository authorRepository;
+	@Autowired 
+	AuthorRepository authorRepository;
 	
-	@Autowired PublisherRepository publisherRepository;
+	@Autowired 
+	PublisherRepository publisherRepository;
 	
-	@Autowired ModelMapper modelMapper;
+	@Autowired 
+	ModelMapper modelMapper;
 	
 	@Override
+	@Transactional
 	public boolean addBook(BookDto bookDto) {
 		if (bookRepository.existsById(bookDto.getIsbn())) {
 			return false;
 		}
 		// Publisher
-		String publisherName = bookDto.getPublisherName();
+		String publisherName = bookDto.getPublisher();
 		Publisher publisher = publisherRepository.findById(publisherName)
-				.orElse(publisherRepository.save(new Publisher(publisherName)));
+				.orElseGet(() -> publisherRepository.save(new Publisher(publisherName)));
 		// Authors
 		Set<Author> authors = bookDto.getAuthors().stream()
-				.map(a -> authorRepository.findById(a.getName()).orElse(authorRepository.save(new Author(a.getName(), a.getBirthDate()))))
+				.map(a -> authorRepository.findById(a.getName())
+				.orElseGet(() -> authorRepository.save(new Author(a.getName(), a.getBirthDate()))))
 				.collect(Collectors.toSet());
 		// Book
 		Book book = new Book(bookDto.getIsbn(), bookDto.getTitle(), authors, publisher);
@@ -73,17 +79,29 @@ public class BookServiceImpl implements BookService {
 	}
 
 	@Override
-	@Transactional
+//	@Transactional(readOnly = true)
 	public Iterable<BookDto> findBooksByAuthor(String authorName) {
-		return bookRepository.findBooksByAuthorsName(authorName)
+		// unidirectional
+//		return bookRepository.findBooksByAuthorsName(authorName) 
+//				.map(b -> modelMapper.map(b, BookDto.class))
+//				.collect(Collectors.toList());
+		// bidirectional
+		Author author = authorRepository.findById(authorName).orElseThrow(() -> new EntityNotFoundException());
+		return author.getBooks().stream()
 				.map(b -> modelMapper.map(b, BookDto.class))
-				.collect(Collectors.toList());
+				.collect(Collectors.toSet());
 	}
 
 	@Override
-	@Transactional
+//	@Transactional(readOnly = true)
 	public Iterable<BookDto> findBooksByPublisher(String publisherName) {
-		return bookRepository.findBooksByPublisherPublisherName(publisherName)
+		// unidirectional
+//		return bookRepository.findBooksByPublisherPublisherName(publisherName)
+//				.map(b -> modelMapper.map(b, BookDto.class))
+//				.collect(Collectors.toList());
+		// bidirectional
+		Publisher publisher = publisherRepository.findById(publisherName).orElseThrow(() -> new EntityNotFoundException());
+		return publisher.getBooks().stream()
 				.map(b -> modelMapper.map(b, BookDto.class))
 				.collect(Collectors.toList());
 	}
@@ -91,23 +109,27 @@ public class BookServiceImpl implements BookService {
 	@Override
 	public Iterable<AuthorDto> findBookAuthors(String isbn) {
 		Book book = bookRepository.findById(isbn).orElseThrow(() -> new EntityNotFoundException());
-		return book.getAuthors()
-				.stream().map(a -> modelMapper.map(a, AuthorDto.class))
-				.collect(Collectors.toSet());
+		return book.getAuthors().stream()
+				.map(a -> modelMapper.map(a, AuthorDto.class))
+				.collect(Collectors.toList());
 	}
 
 	@Override
-	@Transactional
+	@Transactional(readOnly = true)
 	public Iterable<String> findPublishersByAuthor(String authorName) {
-		authorRepository.findById(authorName).orElseThrow(() -> new EntityNotFoundException());
-		return bookRepository.findPublishersByAuthor(authorName)
-				.collect(Collectors.toSet());
+		// unidirectional
+//		return publisherRepository.findPublisherByAuthor(authorName);
+		// bidirectional
+		return publisherRepository.findDistinctByBooksAuthorsName(authorName)
+				.map(p -> p.getPublisherName())
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	@Transactional
 	public AuthorDto removeAuthor(String authorName) {
 		Author author = authorRepository.findById(authorName).orElseThrow(() -> new EntityNotFoundException());
+//		bookRepository.deleteAll(bookRepository.findBooksByAuthorsName(authorName).collect(Collectors.toList()));
 		bookRepository.deleteBooksByAuthorsName(authorName);
 		authorRepository.delete(author);
 		return modelMapper.map(author, AuthorDto.class);

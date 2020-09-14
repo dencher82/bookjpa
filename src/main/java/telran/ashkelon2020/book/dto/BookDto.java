@@ -19,6 +19,6 @@ public class BookDto {
 	String title;
 	@Singular
 	Set<AuthorDto> authors;
-	String publisherName;
+	String publisher;
 	
 }

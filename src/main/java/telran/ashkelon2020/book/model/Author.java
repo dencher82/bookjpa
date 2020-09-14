@@ -2,10 +2,11 @@ package telran.ashkelon2020.book.model;
 
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.util.Set;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.ManyToMany;
 
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -19,7 +20,6 @@ import lombok.Setter;
 @Setter
 @EqualsAndHashCode(of = {"name"})
 @Entity
-@Table(name = "authors")
 public class Author implements Serializable{
 	/**
 	 * 
@@ -28,5 +28,12 @@ public class Author implements Serializable{
 	@Id
 	String name;
 	LocalDate birthDate;
+	@ManyToMany(mappedBy = "authors") // bidirectional
+	Set<Book> books;
+	
+	public Author(String name, LocalDate birthDate) {
+		this.name = name;
+		this.birthDate = birthDate;
+	}
 	
 }
